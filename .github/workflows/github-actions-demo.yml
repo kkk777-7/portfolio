@@ -5,8 +5,7 @@ on:
       - main
 env:
   AWS_REGION: ap-northeast-1
-  AWS_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:SamBuild/
-permissions:
+  AWS_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/SamBuild
       id-token: write
       contents: read  
 jobs:
