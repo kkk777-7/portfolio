@@ -20,6 +20,5 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - run: pwd && ls -l
-      # - run: sam build --use-container
-      # - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+      - run: cd foodsearch && sam build --use-container
+      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
