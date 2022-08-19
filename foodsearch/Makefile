@@ -18,7 +18,6 @@ local-up: build
 
 dev-deploy: build
 	sam deploy \
-	--s3-bucket sam-app-stack  \
 	--parameter-overrides 'ENV=dev' \
 	--force-upload \
 	--no-fail-on-empty-changeset
