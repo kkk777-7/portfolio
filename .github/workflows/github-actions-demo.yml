@@ -1,8 +1,9 @@
-name: lambda-deploy-sam
+name: lambda-deploy-sam-prd
 on:
-  push:
+  pull_request:
     branches:
       - main
+    types: [closed]
 env:
   AWS_REGION: ap-northeast-1
   AWS_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/SamBuild
@@ -20,5 +21,31 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - run: cd foodsearch && sam build --use-container
-      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+      - run: cd foodsearch && make prd-deploy
+
+
+name: lambda-deploy-sam-dev
+on:
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - "/foodsearch"
+env:
+  AWS_REGION: ap-northeast-1
+  AWS_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/SamBuild
+permissions:
+      id-token: write
+      contents: read  
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - uses: aws-actions/setup-sam@v2
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: cd foodsearch && make dev-deploy
