@@ -1,6 +1,6 @@
 name: lambda-deploy-sam-dev
 on:
-  pull_request:
+  push:
     branches:
       - dev
     paths:
