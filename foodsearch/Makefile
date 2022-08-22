@@ -1,7 +1,7 @@
-.PHONY: build test local-run local-up dev-deploy
+.PHONY: build test local-run local-up dev-deploy prd-deploy
 
 build:
-	sam build
+	sam build --use-container
 
 test:
 	cd ./hello-world/ && \
@@ -19,5 +19,12 @@ local-up: build
 dev-deploy: build
 	sam deploy \
 	--parameter-overrides 'ENV=dev' \
+	--force-upload \
+	--no-fail-on-empty-changeset
+
+
+prd-deploy: build
+	sam deploy \
+	--parameter-overrides 'ENV=prd' \
 	--force-upload \
 	--no-fail-on-empty-changeset

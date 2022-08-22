@@ -1,8 +1,10 @@
-name: lambda-deploy-sam
+name: lambda-deploy-sam-dev
 on:
-  push:
+  pull_request:
     branches:
-      - main
+      - dev
+    paths:
+      - "/foodsearch/**"
 env:
   AWS_REGION: ap-northeast-1
   AWS_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/SamBuild
@@ -20,5 +22,4 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - run: cd foodsearch && sam build --use-container
-      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+      - run: cd foodsearch && make dev-deploy
