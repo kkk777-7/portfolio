@@ -18,6 +18,7 @@ local-up: build
 
 dev-deploy: build
 	sam deploy \
+	--config-env dev \
 	--parameter-overrides 'ENV=dev' \
 	--force-upload \
 	--no-fail-on-empty-changeset
@@ -25,6 +26,7 @@ dev-deploy: build
 
 prd-deploy: build
 	sam deploy \
+	--config-env prd \
 	--parameter-overrides 'ENV=prd' \
 	--force-upload \
 	--no-fail-on-empty-changeset

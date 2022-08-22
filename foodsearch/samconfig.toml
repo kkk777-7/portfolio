@@ -7,18 +7,18 @@ region = "ap-northeast-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 disable_rollback = true
-s3_bucket = "aws-sam-cli-managed-bucket"
-s3_prefix = "lambda-dev"
+s3_bucket = "sam-food-search"
+s3_prefix = "dev"
 
-### Prod環境 ###
-[prod]
+### Prd環境 ###
+[prd]
 
-[prod.deploy]
-[prod.deploy.parameters]
-stack_name = "lambda-prod"
+[prd.deploy]
+[prd.deploy.parameters]
+stack_name = "lambda-prd"
 region = "ap-northeast-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 disable_rollback = true
-s3_bucket = "aws-sam-cli-managed-bucket"
-s3_prefix = "lambda-prod"
+s3_bucket = "sam-food-search"
+s3_prefix = "prd"
