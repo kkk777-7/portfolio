@@ -5,6 +5,13 @@ Description: >
   
   Sample SAM Template for foodsearch
 
+Parameters:
+  ENV:
+    Type: String
+    AllowedValues:
+    - dev 
+    - prd
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
