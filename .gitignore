@@ -6,3 +6,4 @@
 *.tfstate
 *.tfstate.*
 *.tfvars
+**/backend.tf
