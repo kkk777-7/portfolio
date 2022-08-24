@@ -4,7 +4,7 @@ build:
 	sam build --use-container
 
 test:
-	cd ./hello-world/ && \
+	cd ./line-bot/ && \
 	go test -v ./...
 
 local-run: build

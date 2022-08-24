@@ -18,11 +18,11 @@ Globals:
     Timeout: 5
 
 Resources:
-  HelloWorldFunction:
+  LineBotFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: hello-world/
-      Handler: hello-world
+      CodeUri: line-bot/
+      Handler: line-bot
       Runtime: go1.x
       Architectures:
         - x86_64
@@ -30,11 +30,14 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /hello
-            Method: GET
+            Path: /callback
+            Method: POST
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
-            Env: !Ref ENV
+            ENV: !Ref ENV
+            CHANNEL_SECRET: '{{resolve:ssm-secure:channel_secret_testbot:1}}'
+            CHANNEL_TOKEN: '{{resolve:ssm-secure:channel_token_testbot:1}}'
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -43,9 +46,9 @@ Outputs:
   HelloWorldAPI:
     Description: "API Gateway endpoint URL for Prod environment for First Function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
+  LineBotFunction:
     Description: "First Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+    Value: !GetAtt LineBotFunction.Arn
+  LineBotFunctionIamRole:
+    Description: "Implicit IAM Role created for Line Bot function"
+    Value: !GetAtt LineBotFunctionRole.Arn
