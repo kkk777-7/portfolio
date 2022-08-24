@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -35,9 +34,6 @@ func main() {
 }
 
 func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	fmt.Println(CHANNEL_SECRET)
-	fmt.Println("------------")
-	fmt.Println(CHANNEL_TOKEN)
 	r := &Line{}
 	err := r.New(CHANNEL_SECRET, CHANNEL_TOKEN)
 	if err != nil {
