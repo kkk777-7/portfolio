@@ -84,7 +84,8 @@ func setupParameters() error {
 	svc := ssm.New(sess)
 
 	params := &ssm.GetParameterInput{
-		Name: aws.String("/channel_secret_testbot"),
+		Name:           aws.String("channel_secret_testbot"),
+		WithDecryption: aws.Bool(true),
 	}
 	res, err := svc.GetParameter(params)
 	if err != nil {
@@ -93,7 +94,8 @@ func setupParameters() error {
 	CHANNEL_SECRET = *res.Parameter.Value
 
 	params = &ssm.GetParameterInput{
-		Name: aws.String("/channel_token_testbot"),
+		Name:           aws.String("channel_token_testbot"),
+		WithDecryption: aws.Bool(true),
 	}
 	res, err = svc.GetParameter(params)
 	if err != nil {
