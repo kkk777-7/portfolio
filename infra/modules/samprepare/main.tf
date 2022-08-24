@@ -28,7 +28,8 @@ data "aws_iam_policy_document" "sam_actions" {
       "s3:*",
       "lambda:*",
       "ecr:*",
-      "cloudformation:*"
+      "cloudformation:*",
+      "apigateway:*"
     ]
     resources = [
       "*"
