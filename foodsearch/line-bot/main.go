@@ -2,10 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"os"
+	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
@@ -16,13 +19,23 @@ const (
 	ErrReq     = 500
 )
 
+var CHANNEL_SECRET string
+var CHANNEL_TOKEN string
+
+func init() {
+	err := setupParameters()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	lambda.Start(Handler)
 }
 
 func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	r := &Line{}
-	err := r.New(os.Getenv("CHANNEL_SECRET"), os.Getenv("CHANNEL_TOKEN"))
+	err := r.New(CHANNEL_SECRET, CHANNEL_TOKEN)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
@@ -59,4 +72,29 @@ func parseRequest(channelSecret string, r events.APIGatewayProxyRequest) ([]*lin
 		return nil, err
 	}
 	return req.Events, nil
+}
+
+func setupParameters() error {
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String("ap-northeast-1")}))
+	svc := ssm.New(sess)
+
+	params := &ssm.GetParameterInput{
+		Name: aws.String("/channel_secret_testbot"),
+	}
+	res, err := svc.GetParameter(params)
+	if err != nil {
+		return err
+	}
+	CHANNEL_SECRET = *res.Parameter.Value
+
+	params = &ssm.GetParameterInput{
+		Name: aws.String("/channel_token_testbot"),
+	}
+	res, err = svc.GetParameter(params)
+	if err != nil {
+		return err
+	}
+	CHANNEL_TOKEN = *res.Parameter.Value
+	return nil
 }
