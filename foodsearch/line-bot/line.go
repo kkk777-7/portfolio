@@ -28,8 +28,15 @@ func (r *Line) New(secret, token string) error {
 }
 
 func (r *Line) Reply(replyToken string, message *linebot.TextMessage) error {
-	if _, err := r.Client.ReplyMessage(replyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
-		return err
+	switch message.Text {
+	case "りりこ":
+		if _, err := r.Client.ReplyMessage(replyToken, linebot.NewTextMessage("がんばれ！！")).Do(); err != nil {
+			return err
+		}
+	default:
+		if _, err := r.Client.ReplyMessage(replyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -41,7 +48,9 @@ func (r *Line) EventRouter(events []*linebot.Event) {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
 				err := r.Reply(event.ReplyToken, message)
-				log.Printf("Reply Error: %v", err)
+				if err != nil {
+					log.Printf("Reply Error: %v", err)
+				}
 			}
 		}
 	}
