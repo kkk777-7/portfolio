@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"line-bot/line"
 	"log"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -34,15 +34,15 @@ func main() {
 }
 
 func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	r := &Line{}
-	err := r.New(CHANNEL_SECRET, CHANNEL_TOKEN)
+	r, err := line.New(CHANNEL_SECRET, CHANNEL_TOKEN)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
 			StatusCode: ErrSsm,
 		}, nil
 	}
-	event, err := parseRequest(r.ChannelSecret, req)
+
+	event, err := r.ParseRequest(req)
 	if err != nil {
 		if err == linebot.ErrInvalidSignature {
 			return events.APIGatewayProxyResponse{
@@ -59,19 +59,8 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 
 	r.EventRouter(event)
 	return events.APIGatewayProxyResponse{
-		Body:       req.Body,
 		StatusCode: Successful,
 	}, nil
-}
-
-func parseRequest(channelSecret string, r events.APIGatewayProxyRequest) ([]*linebot.Event, error) {
-	req := &struct {
-		Events []*linebot.Event `json:"events"`
-	}{}
-	if err := json.Unmarshal([]byte(r.Body), req); err != nil {
-		return nil, err
-	}
-	return req.Events, nil
 }
 
 func setupParameters() error {
