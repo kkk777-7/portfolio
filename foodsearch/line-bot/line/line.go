@@ -2,6 +2,7 @@ package line
 
 import (
 	"encoding/json"
+	"fmt"
 	"line-bot/search"
 	"log"
 
@@ -52,7 +53,8 @@ func (m *message) Reply(replyToken string, message *linebot.TextMessage) error {
 		if err != nil {
 			return err
 		}
-		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(loc.Name+"\n"+loc.Address)).Do(); err != nil {
+		responseLoc := linebot.NewLocationMessage(loc.Name, loc.Address, loc.Lat, loc.Lng)
+		if _, err := m.Client.ReplyMessage(replyToken, responseLoc).Do(); err != nil {
 			return err
 		}
 	default:
@@ -69,6 +71,12 @@ func (m *message) EventRouter(events []*linebot.Event) {
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
+				fmt.Println("-----debug-----")
+				fmt.Println(event.ReplyToken)
+				fmt.Println(event.Source.UserID)
+				fmt.Println(event.Source.GroupID)
+				fmt.Println(event.Source.RoomID)
+				fmt.Println("-----debug-----")
 				err := m.Reply(event.ReplyToken, message)
 				if err != nil {
 					log.Printf("Reply Error: %v", err)
