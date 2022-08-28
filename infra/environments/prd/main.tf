@@ -22,3 +22,17 @@ resource "aws_ssm_parameter" "channel_token" {
   type        = "SecureString"
   value       = var.channel_token_value
 }
+
+resource "aws_ssm_parameter" "hotpepper_key" {
+  name        = var.hotpepper_key_name
+  description = var.hotpepper_key_description
+  type        = "SecureString"
+  value       = var.hotpepper_key_value
+}
+
+resource "aws_ssm_parameter" "google_key" {
+  name        = var.google_key_name
+  description = var.google_key_description
+  type        = "SecureString"
+  value       = var.google_key_value
+}

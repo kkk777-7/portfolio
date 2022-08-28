@@ -10,3 +10,9 @@ variable "channel_secret_value" {}
 variable "channel_token_name" {}
 variable "channel_token_description" {}
 variable "channel_token_value" {}
+variable "hotpepper_key_name" {}
+variable "hotpepper_key_description" {}
+variable "hotpepper_key_value" {}
+variable "google_key_name" {}
+variable "google_key_description" {}
+variable "google_key_value" {}
