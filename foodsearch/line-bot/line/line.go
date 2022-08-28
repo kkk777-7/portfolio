@@ -2,13 +2,14 @@ package line
 
 import (
 	"encoding/json"
+	"line-bot/search"
 	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
-type Messager interface {
+type Messenger interface {
 	Reply(replyToken string, message *linebot.TextMessage) error
 	EventRouter(events []*linebot.Event)
 	ParseRequest(r events.APIGatewayProxyRequest) ([]*linebot.Event, error)
@@ -18,13 +19,16 @@ type message struct {
 	ChannelSecret string
 	ChannelToken  string
 	Client        *linebot.Client
+	search.Searcher
 }
 
-func New(secret, token string) (Messager, error) {
+func NewMessenger(secret, token, hotpepper_apikey, geocording_apikey string) (Messenger, error) {
 	m := &message{
 		ChannelSecret: secret,
 		ChannelToken:  token,
 	}
+
+	m.Searcher = search.NewSearcher(hotpepper_apikey, geocording_apikey)
 
 	bot, err := linebot.New(
 		m.ChannelSecret,
@@ -41,6 +45,14 @@ func (m *message) Reply(replyToken string, message *linebot.TextMessage) error {
 	switch message.Text {
 	case "りりこ":
 		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage("がんばれ！！")).Do(); err != nil {
+			return err
+		}
+	case "東京駅":
+		loc, err := m.Searcher.Place(message.Text)
+		if err != nil {
+			return err
+		}
+		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(loc.Name+"\n"+loc.Address)).Do(); err != nil {
 			return err
 		}
 	default:

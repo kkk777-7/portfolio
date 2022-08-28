@@ -24,6 +24,7 @@ const (
 )
 
 var awsClient *AWSClient
+var lineClinet line.Messenger
 var CHANNEL_SECRET string
 var CHANNEL_TOKEN string
 var HOTPEPPER_KEY string
@@ -35,6 +36,10 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	lineClinet, err = line.NewMessenger(CHANNEL_SECRET, CHANNEL_TOKEN, HOTPEPPER_KEY, GOOGLE_KEY)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
@@ -42,15 +47,7 @@ func main() {
 }
 
 func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	r, err := line.New(CHANNEL_SECRET, CHANNEL_TOKEN)
-	if err != nil {
-		return events.APIGatewayProxyResponse{
-			Body:       err.Error(),
-			StatusCode: ErrSsm,
-		}, nil
-	}
-
-	event, err := r.ParseRequest(req)
+	event, err := lineClinet.ParseRequest(req)
 	if err != nil {
 		if err == linebot.ErrInvalidSignature {
 			return events.APIGatewayProxyResponse{
@@ -65,7 +62,7 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 		}
 	}
 
-	r.EventRouter(event)
+	lineClinet.EventRouter(event)
 	return events.APIGatewayProxyResponse{
 		StatusCode: Successful,
 	}, nil
