@@ -72,11 +72,10 @@ func (m *message) EventRouter(events []*linebot.Event) {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
 				fmt.Println("-----debug-----")
-				fmt.Println(event.ReplyToken)
-				fmt.Println(event.Source.UserID)
-				fmt.Println(event.Source.GroupID)
-				fmt.Println(event.Source.RoomID)
-				fmt.Println("-----debug-----")
+				fmt.Printf("ReplyToken: %s\n", event.ReplyToken)
+				fmt.Printf("UserID: %s\n", event.Source.UserID)
+				fmt.Printf("GroupID: %s\n", event.Source.GroupID)
+				fmt.Printf("RoomID: %s\n", event.Source.RoomID)
 				err := m.Reply(event.ReplyToken, message)
 				if err != nil {
 					log.Printf("Reply Error: %v", err)
