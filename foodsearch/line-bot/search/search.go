@@ -16,7 +16,7 @@ const (
 	HOTPEPPER_APIENDPOINT  = "https://webservice.recruit.co.jp/hotpepper/gourmet/v1/"
 	GEOCORDING_APIENDPOINT = "https://maps.googleapis.com/maps/api/geocode/json"
 
-	HOTPEPPER_JQ_QUERY  = ".results.shop[] | { name: .name, address: .address, open: .open, url: .urls.pc}"
+	HOTPEPPER_JQ_QUERY  = ".results.shop[] | { name: .name, access: .mobile_access, budget: .budget.average, url: .urls.pc, photo: photo.mobile.l}"
 	GEOCORDING_JQ_QUERY = ".results[] | { address: .formatted_address, lat: .geometry.location.lat, lng: .geometry.location.lng}"
 )
 
@@ -31,10 +31,11 @@ type search struct {
 }
 
 type Shop struct {
-	Name    string `json:"name"`
-	Address string `json:"address"`
-	Open    string `json:"open"`
-	Url     string `json:"url"`
+	Name   string `json:"name"`
+	Access string `json:"access"`
+	Budget string `json:"budget"`
+	Url    string `json:"url"`
+	Photo  string `json:"photo"`
 }
 
 type Location struct {
