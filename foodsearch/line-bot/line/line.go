@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"line-bot/search"
 	"log"
+	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -197,7 +198,7 @@ func setFooter(shop search.Shop) *linebot.BoxComponent {
 		Spacing: linebot.FlexComponentSpacingTypeXs,
 		Contents: []linebot.FlexComponent{
 			setButton("詳しく見る", shop.Url),
-			setButton("地図を確認する", "https://www.google.com/maps"+"?q="+shop.Lat+","+shop.Lng),
+			setButton("地図を確認する", "https://www.google.com/maps"+"?q="+strconv.FormatFloat(shop.Lat, 'f', -1, 64)+","+strconv.FormatFloat(shop.Lng, 'f', -1, 64)),
 			setButton("クーポンを確認", shop.Coupon),
 		},
 	}

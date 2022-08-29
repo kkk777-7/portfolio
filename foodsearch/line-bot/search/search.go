@@ -31,14 +31,14 @@ type search struct {
 }
 
 type Shop struct {
-	Name   string `json:"name"`
-	Access string `json:"access"`
-	Budget string `json:"budget"`
-	Url    string `json:"url"`
-	Photo  string `json:"photo"`
-	Lat    string `json:"lat"`
-	Lng    string `json:"lng"`
-	Coupon string `json:"coupon"`
+	Name   string  `json:"name"`
+	Access string  `json:"access"`
+	Budget string  `json:"budget"`
+	Url    string  `json:"url"`
+	Photo  string  `json:"photo"`
+	Lat    float64 `json:"lat"`
+	Lng    float64 `json:"lng"`
+	Coupon string  `json:"coupon"`
 }
 
 type Location struct {
