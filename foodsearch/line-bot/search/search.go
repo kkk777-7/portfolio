@@ -16,7 +16,7 @@ const (
 	HOTPEPPER_APIENDPOINT  = "https://webservice.recruit.co.jp/hotpepper/gourmet/v1/"
 	GEOCORDING_APIENDPOINT = "https://maps.googleapis.com/maps/api/geocode/json"
 
-	HOTPEPPER_JQ_QUERY  = ".results.shop[] | { name: .name, access: .mobile_access, budget: .budget.average, url: .urls.pc, photo: photo.mobile.l}"
+	HOTPEPPER_JQ_QUERY  = ".results.shop[] | { name: .name, access: .mobile_access, budget: .budget.average, url: .urls.pc, photo: .photo.mobile.l }"
 	GEOCORDING_JQ_QUERY = ".results[] | { address: .formatted_address, lat: .geometry.location.lat, lng: .geometry.location.lng}"
 )
 
