@@ -197,6 +197,8 @@ func setFooter(shop search.Shop) *linebot.BoxComponent {
 		Spacing: linebot.FlexComponentSpacingTypeXs,
 		Contents: []linebot.FlexComponent{
 			setButton("詳しく見る", shop.Url),
+			setButton("地図を確認する", "https://www.google.com/maps"+"?q="+shop.Lat+","+shop.Lng),
+			setButton("クーポンを確認", shop.Coupon),
 		},
 	}
 }
