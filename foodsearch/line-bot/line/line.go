@@ -2,7 +2,6 @@ package line
 
 import (
 	"encoding/json"
-	"fmt"
 	"line-bot/search"
 	"log"
 
@@ -49,13 +48,15 @@ func (m *message) Reply(replyToken string, message *linebot.TextMessage) error {
 			return err
 		}
 	case "東京駅":
-		loc, err := m.Searcher.Place(message.Text)
+		shopAry, err := m.Searcher.Restaurant(message.Text, "5000", "フレンチ")
 		if err != nil {
 			return err
 		}
-		responseLoc := linebot.NewLocationMessage(loc.Name, loc.Address, loc.Lat, loc.Lng)
-		if _, err := m.Client.ReplyMessage(replyToken, responseLoc).Do(); err != nil {
-			return err
+		for i := 0; i < len(shopAry); i++ {
+			replyMessage := shopAry[i].Name + "\n" + shopAry[i].Address + "\n" + shopAry[i].Open + "\n" + shopAry[i].Url
+			if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
+				return err
+			}
 		}
 	default:
 		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
@@ -71,11 +72,6 @@ func (m *message) EventRouter(events []*linebot.Event) {
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-				fmt.Println("-----debug-----")
-				fmt.Printf("ReplyToken: %s\n", event.ReplyToken)
-				fmt.Printf("UserID: %s\n", event.Source.UserID)
-				fmt.Printf("GroupID: %s\n", event.Source.GroupID)
-				fmt.Printf("RoomID: %s\n", event.Source.RoomID)
 				err := m.Reply(event.ReplyToken, message)
 				if err != nil {
 					log.Printf("Reply Error: %v", err)
