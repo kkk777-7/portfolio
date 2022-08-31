@@ -9,21 +9,16 @@ test:
 
 local-run: build
 	sam local invoke \
-	--parameter-overrides 'ENV=local' \
-	--parameter-overrides 'AWS-PROFILE=local' \
-	--parameter-overrides 'DYNAMO-ENDPOINT=http://localhost:8000'
+	--parameter-overrides 'ENV=local AWS-PROFILE=local DYNAMO-ENDPOINT=http://localhost:8000' 
 
 local-up: build
 	sam local start-api \
-	--parameter-overrides 'ENV=local' \
-	--parameter-overrides 'AWS-PROFILE=local' \
-	--parameter-overrides 'DYNAMO-ENDPOINT=http://localhost:8000'
+	--parameter-overrides 'ENV=local AWS-PROFILE=local DYNAMO-ENDPOINT=http://localhost:8000' 
 
 dev-deploy: build
 	sam deploy \
 	--config-env dev \
-	--parameter-overrides 'ENV=dev' \
-	--parameter-overrides 'AWS-PROFILE=default' \
+	--parameter-overrides 'ENV=dev AWS-PROFILE=default' \
 	--force-upload \
 	--no-fail-on-empty-changeset
 
@@ -31,7 +26,6 @@ dev-deploy: build
 prd-deploy: build
 	sam deploy \
 	--config-env prd \
-	--parameter-overrides 'ENV=prd' \
-	--parameter-overrides 'AWS-PROFILE=default' \
+	--parameter-overrides 'ENV=prd AWS-PROFILE=default' \
 	--force-upload \
 	--no-fail-on-empty-changeset
