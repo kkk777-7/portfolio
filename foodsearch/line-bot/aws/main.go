@@ -17,7 +17,7 @@ type Client struct {
 var table dynamo.Table
 
 func NewClient(tablename string) *Client {
-	awsprofile := os.Getenv("AWS_PROFILE")
+	awsprofile := os.Getenv("AWS-PROFILE")
 
 	client := new(Client)
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
@@ -27,7 +27,7 @@ func NewClient(tablename string) *Client {
 
 	if awsprofile == "local" {
 		cfg := aws.NewConfig()
-		cfg.Endpoint = aws.String(os.Getenv("DYNAMO_ENDPOINT"))
+		cfg.Endpoint = aws.String(os.Getenv("DYNAMO-ENDPOINT"))
 		client.dynamosvc = dynamo.New(sess, cfg)
 	} else {
 		client.dynamosvc = dynamo.New(sess)
