@@ -16,3 +16,4 @@ variable "hotpepper_key_value" {}
 variable "google_key_name" {}
 variable "google_key_description" {}
 variable "google_key_value" {}
+variable "dynamodb_name" {}

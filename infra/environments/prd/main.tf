@@ -36,3 +36,20 @@ resource "aws_ssm_parameter" "google_key" {
   type        = "SecureString"
   value       = var.google_key_value
 }
+
+resource "aws_dynamodb_table" "users" {
+  name           = var.dynamodb_name
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "user_line_id"
+  range_key      = "status"
+  attribute {
+    name = "user_line_id"
+    type = "S"
+  }
+  attribute {
+    name = "status"
+    type = "S"
+  }
+}
