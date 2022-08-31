@@ -1,0 +1,46 @@
+{
+    "users": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "user_line_id": {
+                        "S": "123456789"
+                    },
+                    "status": {
+                        "S": "wait"
+                    },
+                    "genre": {
+                        "S": "中華"
+                    },
+                    "place": {
+                        "S": "京都"
+                    },
+                    "budget": {
+                        "S": "1000"
+                    }
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "user_line_id": {
+                        "S": "1234567890"
+                    },
+                    "status": {
+                        "S": "wait"
+                    },
+                    "genre": {
+                        "S": "イタリアン"
+                    },
+                    "place": {
+                        "S": "東京"
+                    },
+                    "budget": {
+                        "S": "2000"
+                    }
+                }
+            }
+        }
+    ]
+}

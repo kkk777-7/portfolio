@@ -1,0 +1,27 @@
+{
+    "TableName": "users",
+    "KeySchema": [
+        {
+            "AttributeName": "user_line_id",
+            "KeyType": "HASH"
+        },
+        {
+            "AttributeName": "status",
+            "KeyType": "RANGE"
+        }
+    ],
+    "AttributeDefinitions": [
+        {
+            "AttributeName": "user_line_id",
+            "AttributeType": "S"
+        },
+        {
+            "AttributeName": "status",
+            "AttributeType": "S"
+        }
+    ],
+    "ProvisionedThroughput": {
+        "ReadCapacityUnits": 1,
+        "WriteCapacityUnits": 1
+    }
+}
