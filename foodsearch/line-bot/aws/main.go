@@ -1,4 +1,4 @@
-package awsclient
+package aws
 
 import (
 	"os"
@@ -16,7 +16,7 @@ type Client struct {
 
 var table dynamo.Table
 
-func NewClient() *Client {
+func NewClient(tablename string) *Client {
 	awsprofile := os.Getenv("AWS_PROFILE")
 
 	client := new(Client)
@@ -32,7 +32,7 @@ func NewClient() *Client {
 	} else {
 		client.dynamosvc = dynamo.New(sess)
 	}
-	table = client.dynamosvc.Table("users")
+	table = client.dynamosvc.Table(tablename)
 	return client
 }
 
@@ -46,4 +46,20 @@ func (a *Client) SsmGetParameter(key string) (string, error) {
 		return "", err
 	}
 	return *res.Parameter.Value, nil
+}
+
+func (a *Client) IsLineUser(id string, results interface{}) error {
+	err := table.Get("user_line_id", id).All(&results)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *Client) SetLineUser(user interface{}) error {
+	err := table.Put(user).Run()
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -7,3 +7,6 @@
 *.tfstate.*
 *.tfvars
 **/backend.tf
+
+**/data
+**/search_test.go
