@@ -11,6 +11,11 @@ Parameters:
     AllowedValues:
     - dev 
     - prd
+  PROFILE:
+    Type: String
+  DYNAMOENDPOINT:
+    Type: String
+    Default: ""
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -36,7 +41,7 @@ Resources:
         Variables:
             ENV: !Ref ENV
             AWSPROFILE: !Ref PROFILE
-            DYNAMOENDPOINT: ""
+            DYNAMOENDPOINT: !Ref DYNAMOENDPOINT
 
 
 Outputs:

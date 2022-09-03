@@ -43,13 +43,8 @@ resource "aws_dynamodb_table" "users" {
   read_capacity  = 1
   write_capacity = 1
   hash_key       = "user_line_id"
-  range_key      = "status"
   attribute {
     name = "user_line_id"
-    type = "S"
-  }
-  attribute {
-    name = "status"
     type = "S"
   }
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"line-bot/aws"
+	"line-bot/awsclient"
 	"line-bot/line"
 	"log"
 
@@ -17,7 +17,7 @@ const (
 	ErrReq     = 500
 )
 
-var awsClient *aws.Client
+var awsClient *awsclient.Client
 var lineClinet line.Messenger
 var CHANNEL_SECRET string
 var CHANNEL_TOKEN string
@@ -25,7 +25,7 @@ var HOTPEPPER_KEY string
 var GOOGLE_KEY string
 
 func init() {
-	awsClient = aws.NewClient("users")
+	awsClient = awsclient.NewClient("users")
 	err := setupParameters()
 	if err != nil {
 		log.Fatal(err)

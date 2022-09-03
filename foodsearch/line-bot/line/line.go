@@ -2,7 +2,7 @@ package line
 
 import (
 	"encoding/json"
-	"line-bot/aws"
+	"line-bot/awsclient"
 	"line-bot/search"
 	"log"
 
@@ -20,19 +20,11 @@ type message struct {
 	ChannelSecret string
 	ChannelToken  string
 	Client        *linebot.Client
-	AwsClient     *aws.Client
+	AwsClient     *awsclient.Client
 	search.Searcher
 }
 
-type User struct {
-	ID     string `json:"id" dynamo:"user_line_id"`
-	Status string `json:"status" dynamo:"status"`
-	Genre  string `json:"genre" dynamo:"genre"`
-	Place  string `json:"place" dynamo:"place"`
-	Budget string `json:"budget" dynamo:"budget"`
-}
-
-func NewMessenger(secret, token, hotpepper_apikey, geocording_apikey string, _awsclient *aws.Client) (Messenger, error) {
+func NewMessenger(secret, token, hotpepper_apikey, geocording_apikey string, _awsclient *awsclient.Client) (Messenger, error) {
 	m := &message{
 		ChannelSecret: secret,
 		ChannelToken:  token,
@@ -107,13 +99,13 @@ func (m *message) ParseRequest(r events.APIGatewayProxyRequest) ([]*linebot.Even
 }
 
 func (m *message) statusCheck(event *linebot.Event) error {
-	var user User
-	err := m.AwsClient.IsLineUser(event.Source.UserID, user)
-	if err != nil {
+	var user awsclient.User
+	err := m.AwsClient.IsLineUser(event.Source.UserID, &user)
+	if err != nil && user.ID != "" {
 		return err
 	}
-	if user.ID != "" {
-		user = User{ID: event.Source.UserID, Status: "WaitGenre"}
+	if user.ID == "" {
+		user = awsclient.User{ID: event.Source.UserID, Status: "WaitGenre"}
 		err = m.AwsClient.SetLineUser(user)
 		if err != nil {
 			return err
