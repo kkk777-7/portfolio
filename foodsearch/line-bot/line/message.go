@@ -7,6 +7,20 @@ import (
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
+func quickReplyButton(labels []string, values []string) *linebot.QuickReplyItems {
+	var buttons []*linebot.QuickReplyButton
+	for i := 0; i < len(labels); i++ {
+		button := linebot.QuickReplyButton{
+			Action: &linebot.MessageAction{
+				Label: labels[i],
+				Text:  values[i],
+			},
+		}
+		buttons = append(buttons, &button)
+	}
+	return &linebot.QuickReplyItems{Items: buttons}
+}
+
 func flexRestaurants(shops []search.Shop) *linebot.CarouselContainer {
 	var bcs []*linebot.BubbleContainer
 	for _, shop := range shops {

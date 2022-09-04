@@ -72,10 +72,9 @@ func (s *search) Restaurant(place, budget, genre string) ([]Shop, error) {
 	params.Add("key", s.hotpepper_apikey)
 	params.Add("lat", strconv.FormatFloat(loc.Lat, 'f', -1, 64))
 	params.Add("lng", strconv.FormatFloat(loc.Lng, 'f', -1, 64))
-	params.Add("range", "2")
-	params.Add("order", "4")
+	params.Add("range", "3")
 	params.Add("budget", budgetcode)
-	params.Add("budget", genrecode)
+	params.Add("genre", genrecode)
 	params.Add("count", "5")
 	params.Add("format", "json")
 
