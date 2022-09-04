@@ -11,11 +11,8 @@ Parameters:
     AllowedValues:
     - dev 
     - prd
-  PROFILE:
+  AWSREGION:
     Type: String
-  DYNAMOENDPOINT:
-    Type: String
-    Default: ""
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -40,9 +37,7 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
             ENV: !Ref ENV
-            AWSPROFILE: !Ref PROFILE
-            DYNAMOENDPOINT: !Ref DYNAMOENDPOINT
-
+            AWSREGION: !Ref AWSREGION
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
