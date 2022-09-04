@@ -42,9 +42,9 @@ resource "aws_dynamodb_table" "users" {
   billing_mode   = "PROVISIONED"
   read_capacity  = 1
   write_capacity = 1
-  hash_key       = "user_line_id"
+  hash_key       = "UserId"
   attribute {
-    name = "user_line_id"
+    name = "UserId"
     type = "S"
   }
 }
