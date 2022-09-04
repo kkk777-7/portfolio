@@ -3,19 +3,19 @@
         {
             "PutRequest": {
                 "Item": {
-                    "user_line_id": {
+                    "UserId": {
                         "S": "123456789"
                     },
-                    "status": {
+                    "Status": {
                         "S": "wait"
                     },
-                    "genre": {
+                    "Genre": {
                         "S": "中華"
                     },
-                    "place": {
+                    "Place": {
                         "S": "京都"
                     },
-                    "budget": {
+                    "Budget": {
                         "S": "1000"
                     }
                 }
@@ -24,19 +24,19 @@
         {
             "PutRequest": {
                 "Item": {
-                    "user_line_id": {
+                    "UserId": {
                         "S": "1234567890"
                     },
-                    "status": {
+                    "Status": {
                         "S": "wait"
                     },
-                    "genre": {
+                    "Genre": {
                         "S": "イタリアン"
                     },
-                    "place": {
+                    "Place": {
                         "S": "東京"
                     },
-                    "budget": {
+                    "Budget": {
                         "S": "2000"
                     }
                 }

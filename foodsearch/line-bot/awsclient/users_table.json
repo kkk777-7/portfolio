@@ -2,13 +2,13 @@
     "TableName": "users",
     "KeySchema": [
         {
-            "AttributeName": "user_line_id",
+            "AttributeName": "UserId",
             "KeyType": "HASH"
         }
     ],
     "AttributeDefinitions": [
         {
-            "AttributeName": "user_line_id",
+            "AttributeName": "UserId",
             "AttributeType": "S"
         }
     ],

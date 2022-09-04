@@ -13,22 +13,21 @@ func TestIsLineUser(t *testing.T) {
 	client := NewClient("users")
 
 	err := client.IsLineUser("123456789", &user)
-	if err != nil && user.ID != "" {
+	if err != nil && user.UserId != "" {
 		fmt.Println(err)
 	}
 	fmt.Println(user.Status)
 	fmt.Println(user)
 
-	user2 := User{ID: "1", Status: "NG"}
-	err = client.SetLineUser(user2)
+	user2 := User{UserId: "1", Status: "NG"}
+	err = client.SetLineUser(&user2)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = client.IsLineUser("1", &user)
-	if err != nil && user.ID != "" {
+	err = client.UpdateLineUser(&user2, "Genre", "イタリアン")
+	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(user.Status)
-	fmt.Println(user)
+	fmt.Println(user2)
 }
