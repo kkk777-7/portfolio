@@ -1,0 +1,46 @@
+{
+    "users": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "UserId": {
+                        "S": "123456789"
+                    },
+                    "Status": {
+                        "S": "wait"
+                    },
+                    "Genre": {
+                        "S": "中華"
+                    },
+                    "Place": {
+                        "S": "京都"
+                    },
+                    "Budget": {
+                        "S": "1000"
+                    }
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "UserId": {
+                        "S": "1234567890"
+                    },
+                    "Status": {
+                        "S": "wait"
+                    },
+                    "Genre": {
+                        "S": "イタリアン"
+                    },
+                    "Place": {
+                        "S": "東京"
+                    },
+                    "Budget": {
+                        "S": "2000"
+                    }
+                }
+            }
+        }
+    ]
+}

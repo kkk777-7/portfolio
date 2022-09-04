@@ -1,13 +1,13 @@
 name: lambda-deploy-sam-dev
 on:
-  pull_request:
+  push:
     branches:
       - dev
     paths:
-      - "/foodsearch/**"
+      - "foodsearch/**"
 env:
   AWS_REGION: ap-northeast-1
-  AWS_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/SamBuild
+  AWS_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/sam-github-actions
 permissions:
       id-token: write
       contents: read  
