@@ -48,3 +48,20 @@ resource "aws_dynamodb_table" "users" {
     type = "S"
   }
 }
+
+resource "aws_dynamodb_table" "shops" {
+  name           = "shops"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "UserId"
+  range_key      = "ShopId"
+  attribute {
+    name = "UserId"
+    type = "S"
+  }
+  attribute {
+    name = "ShopId"
+    type = "S"
+  }
+}
