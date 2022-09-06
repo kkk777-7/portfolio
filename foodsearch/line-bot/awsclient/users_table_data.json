@@ -7,7 +7,7 @@
                         "S": "123456789"
                     },
                     "Status": {
-                        "S": "wait"
+                        "S": "WaitSearch"
                     },
                     "Genre": {
                         "S": "中華"
@@ -28,7 +28,7 @@
                         "S": "1234567890"
                     },
                     "Status": {
-                        "S": "wait"
+                        "S": "WaitSearch"
                     },
                     "Genre": {
                         "S": "イタリアン"
