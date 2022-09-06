@@ -73,30 +73,57 @@ func (m *message) EventRouter(events []*linebot.Event) {
 func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) error {
 	replyToken := event.ReplyToken
 
-	if message.Text == "お気に入り表示" {
+	if err := m.statusCheck(event); err != nil {
+		replyMessage := "サーバーエラーです...\nもう一度トライしてね！"
+		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
+			return err
+		}
+		return err
+	}
+
+	switch message.Text {
+	case "お気に入り表示":
 		var shopAry []search.Shop
 		err := m.AwsClient.GetShop("shops", event.Source.UserID, &shopAry)
 		if err != nil {
+			replyMessage := "お気に入り取得に失敗しました...\nもう一度トライしてね！"
+			if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
+				return err
+			}
 			return err
 		}
-		f := flexRestaurants(shopAry)
-		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewFlexMessage("検索結果", f)).Do(); err != nil {
-			return err
+		if len(shopAry) == 0 {
+			replyMessage := "まだお気に入り登録したお店はないよ！"
+			if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
+				return err
+			}
+		} else {
+			f := flexRestaurants(shopAry)
+			if _, err := m.Client.ReplyMessage(replyToken, linebot.NewFlexMessage("検索結果", f)).Do(); err != nil {
+				return err
+			}
 		}
 		return nil
+	case "検索":
+		if err := m.statusReset(); err != nil {
+			replyMessage := "サーバーエラーです...\nもう一度トライしてね！"
+			if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
+				return err
+			}
+			return err
+		}
 	}
 
-	if err := m.statusCheck(event); err != nil {
-		return err
-	}
 	if user.Status == "WaitSearch" && message.Text != "検索" {
-		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage("お店を検索したい場合は、「検索」と入力してね！")).Do(); err != nil {
+		replyMessage := "お店を検索したい場合は、「検索」と入力してね！"
+		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
 			return err
 		}
 	} else {
 		switch user.Status {
 		case "WaitSearch":
-			if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage("どこで食べる？\n住所や地名で検索してね！")).Do(); err != nil {
+			replyMessage := "どこで食べる？\n住所や地名で検索してね！"
+			if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
 				return err
 			}
 			err := m.AwsClient.UpdateLineUser("users", &user, "Status", "WaitPlace")
@@ -111,6 +138,9 @@ func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) erro
 				return err
 			}
 			err := m.AwsClient.UpdateLineUser("users", &user, "Place", message.Text)
+			if err != nil {
+				return err
+			}
 			err = m.AwsClient.UpdateLineUser("users", &user, "Status", "WaitGenre")
 			if err != nil {
 				return err
@@ -123,12 +153,18 @@ func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) erro
 				return err
 			}
 			err := m.AwsClient.UpdateLineUser("users", &user, "Genre", message.Text)
+			if err != nil {
+				return err
+			}
 			err = m.AwsClient.UpdateLineUser("users", &user, "Status", "WaitBudget")
 			if err != nil {
 				return err
 			}
 		case "WaitBudget":
 			err := m.AwsClient.UpdateLineUser("users", &user, "Budget", message.Text)
+			if err != nil {
+				return err
+			}
 			err = m.AwsClient.UpdateLineUser("users", &user, "Status", "Searching")
 			if err != nil {
 				return err
@@ -136,6 +172,10 @@ func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) erro
 
 			shopAry, err := m.Searcher.Restaurant(user.Place, user.Budget, user.Genre)
 			if err != nil {
+				replyMessage := "お店が見つかりませんでした...\n条件を見直してね！"
+				if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
+					return err
+				}
 				return err
 			}
 
@@ -149,7 +189,8 @@ func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) erro
 			}
 
 			if len(shopAry) == 0 {
-				if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage("お店が見つかりませんでした...\n条件を見直してね！")).Do(); err != nil {
+				replyMessage := "お店が見つかりませんでした...\n条件を見直してね！"
+				if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
 					return err
 				}
 			} else {
@@ -172,6 +213,10 @@ func (m *message) Register(event *linebot.Event) error {
 	shop_id := event.Postback.Data
 	shop, err := m.Searcher.RestaurantById(shop_id)
 	if err != nil {
+		replyMessage := fmt.Sprintf("%sのお気に入り登録に失敗しました...\nもう一度トライしてね！", shop.Name)
+		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
+			return err
+		}
 		return err
 	}
 
@@ -183,9 +228,12 @@ func (m *message) Register(event *linebot.Event) error {
 	}
 
 	shop.UserId = event.Source.UserID
-	fmt.Printf("%+v\n", shop)
 	err = m.AwsClient.SetShop("shops", &shop)
 	if err != nil {
+		replyMessage := fmt.Sprintf("%sのお気に入り登録に失敗しました...\nもう一度トライしてね！", shop.Name)
+		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
+			return err
+		}
 		return err
 	}
 
