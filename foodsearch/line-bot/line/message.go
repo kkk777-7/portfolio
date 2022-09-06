@@ -126,18 +126,28 @@ func setFooter(shop search.Shop) *linebot.BoxComponent {
 		Layout:  linebot.FlexBoxLayoutTypeVertical,
 		Spacing: linebot.FlexComponentSpacingTypeXs,
 		Contents: []linebot.FlexComponent{
-			setButton("詳しく見る", shop.Url),
-			setButton("地図を確認する", "https://www.google.com/maps"+"?q="+strconv.FormatFloat(shop.Lat, 'f', -1, 64)+","+strconv.FormatFloat(shop.Lng, 'f', -1, 64)),
-			setButton("クーポンを確認", shop.Coupon),
+			setUriButton("詳しく見る", shop.Url),
+			setUriButton("地図を確認する", "https://www.google.com/maps"+"?q="+strconv.FormatFloat(shop.Lat, 'f', -1, 64)+","+strconv.FormatFloat(shop.Lng, 'f', -1, 64)),
+			setUriButton("クーポンを確認", shop.Coupon),
+			setPostButton("お気に入り登録", shop),
 		},
 	}
 }
 
-func setButton(label string, uri string) *linebot.ButtonComponent {
+func setUriButton(label string, uri string) *linebot.ButtonComponent {
 	return &linebot.ButtonComponent{
 		Type:   linebot.FlexComponentTypeButton,
 		Style:  linebot.FlexButtonStyleTypeLink,
 		Height: linebot.FlexButtonHeightTypeSm,
 		Action: linebot.NewURIAction(label, uri),
+	}
+}
+
+func setPostButton(label string, shop search.Shop) *linebot.ButtonComponent {
+	return &linebot.ButtonComponent{
+		Type:   linebot.FlexComponentTypeButton,
+		Style:  linebot.FlexButtonStyleTypeLink,
+		Height: linebot.FlexButtonHeightTypeSm,
+		Action: linebot.NewPostbackAction(label, shop.ShopId, "", ""),
 	}
 }

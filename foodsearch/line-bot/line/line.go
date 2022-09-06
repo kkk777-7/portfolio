@@ -2,6 +2,7 @@ package line
 
 import (
 	"encoding/json"
+	"fmt"
 	"line-bot/awsclient"
 	"line-bot/search"
 	"log"
@@ -11,8 +12,8 @@ import (
 )
 
 type Messenger interface {
-	Reply(event *linebot.Event, message *linebot.TextMessage) error
 	EventRouter(events []*linebot.Event)
+	Reply(event *linebot.Event, message *linebot.TextMessage) error
 	ParseRequest(r events.APIGatewayProxyRequest) ([]*linebot.Event, error)
 }
 
@@ -49,8 +50,41 @@ func NewMessenger(secret, token, hotpepper_apikey, geocording_apikey string, _aw
 	return m, nil
 }
 
+func (m *message) EventRouter(events []*linebot.Event) {
+	for _, event := range events {
+		switch event.Type {
+		case linebot.EventTypeMessage:
+			switch message := event.Message.(type) {
+			case *linebot.TextMessage:
+				err := m.Reply(event, message)
+				if err != nil {
+					log.Printf("Reply Error: %v", err)
+				}
+			}
+		case linebot.EventTypePostback:
+			err := m.Register(event)
+			if err != nil {
+				log.Printf("Register Error: %v", err)
+			}
+		}
+	}
+}
+
 func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) error {
 	replyToken := event.ReplyToken
+
+	if message.Text == "お気に入り表示" {
+		var shopAry []search.Shop
+		err := m.AwsClient.GetShop("shops", event.Source.UserID, &shopAry)
+		if err != nil {
+			return err
+		}
+		f := flexRestaurants(shopAry)
+		if _, err := m.Client.ReplyMessage(replyToken, linebot.NewFlexMessage("検索結果", f)).Do(); err != nil {
+			return err
+		}
+		return nil
+	}
 
 	if err := m.statusCheck(event); err != nil {
 		return err
@@ -65,7 +99,7 @@ func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) erro
 			if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage("どこで食べる？\n住所や地名で検索してね！")).Do(); err != nil {
 				return err
 			}
-			err := m.AwsClient.UpdateLineUser(&user, "Status", "WaitPlace")
+			err := m.AwsClient.UpdateLineUser("users", &user, "Status", "WaitPlace")
 			if err != nil {
 				return err
 			}
@@ -76,8 +110,8 @@ func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) erro
 			if _, err := m.Client.ReplyMessage(replyToken, replyMessage).Do(); err != nil {
 				return err
 			}
-			err := m.AwsClient.UpdateLineUser(&user, "Place", message.Text)
-			err = m.AwsClient.UpdateLineUser(&user, "Status", "WaitGenre")
+			err := m.AwsClient.UpdateLineUser("users", &user, "Place", message.Text)
+			err = m.AwsClient.UpdateLineUser("users", &user, "Status", "WaitGenre")
 			if err != nil {
 				return err
 			}
@@ -88,14 +122,14 @@ func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) erro
 			if _, err := m.Client.ReplyMessage(replyToken, replyMessage).Do(); err != nil {
 				return err
 			}
-			err := m.AwsClient.UpdateLineUser(&user, "Genre", message.Text)
-			err = m.AwsClient.UpdateLineUser(&user, "Status", "WaitBudget")
+			err := m.AwsClient.UpdateLineUser("users", &user, "Genre", message.Text)
+			err = m.AwsClient.UpdateLineUser("users", &user, "Status", "WaitBudget")
 			if err != nil {
 				return err
 			}
 		case "WaitBudget":
-			err := m.AwsClient.UpdateLineUser(&user, "Budget", message.Text)
-			err = m.AwsClient.UpdateLineUser(&user, "Status", "Searching")
+			err := m.AwsClient.UpdateLineUser("users", &user, "Budget", message.Text)
+			err = m.AwsClient.UpdateLineUser("users", &user, "Status", "Searching")
 			if err != nil {
 				return err
 			}
@@ -132,19 +166,34 @@ func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) erro
 	return nil
 }
 
-func (m *message) EventRouter(events []*linebot.Event) {
-	for _, event := range events {
-		switch event.Type {
-		case linebot.EventTypeMessage:
-			switch message := event.Message.(type) {
-			case *linebot.TextMessage:
-				err := m.Reply(event, message)
-				if err != nil {
-					log.Printf("Reply Error: %v", err)
-				}
-			}
-		}
+func (m *message) Register(event *linebot.Event) error {
+	replyToken := event.ReplyToken
+
+	shop_id := event.Postback.Data
+	shop, err := m.Searcher.RestaurantById(shop_id)
+	if err != nil {
+		return err
 	}
+
+	if shop.Access == "" {
+		shop.Access = "-"
+	}
+	if shop.Budget == "" {
+		shop.Budget = "-"
+	}
+
+	shop.UserId = event.Source.UserID
+	fmt.Printf("%+v\n", shop)
+	err = m.AwsClient.SetShop("shops", &shop)
+	if err != nil {
+		return err
+	}
+
+	replyMessage := fmt.Sprintf("%sをお気に入り登録したよ！", shop.Name)
+	if _, err := m.Client.ReplyMessage(replyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *message) ParseRequest(r events.APIGatewayProxyRequest) ([]*linebot.Event, error) {
@@ -158,13 +207,13 @@ func (m *message) ParseRequest(r events.APIGatewayProxyRequest) ([]*linebot.Even
 }
 
 func (m *message) statusCheck(event *linebot.Event) error {
-	err := m.AwsClient.IsLineUser(event.Source.UserID, &user)
+	err := m.AwsClient.IsLineUser("users", event.Source.UserID, &user)
 	if err != nil && user.UserId != "" {
 		return err
 	}
 	if user.UserId == "" {
 		user = awsclient.User{UserId: event.Source.UserID, Status: "WaitSearch"}
-		err = m.AwsClient.SetLineUser(&user)
+		err = m.AwsClient.SetLineUser("users", &user)
 		if err != nil {
 			return err
 		}
@@ -173,7 +222,7 @@ func (m *message) statusCheck(event *linebot.Event) error {
 }
 
 func (m *message) statusReset() error {
-	err := m.AwsClient.UpdateLineUser(&user, "Status", "WaitSearch")
+	err := m.AwsClient.UpdateLineUser("users", &user, "Status", "WaitSearch")
 	if err != nil {
 		return err
 	}

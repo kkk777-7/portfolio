@@ -16,12 +16,13 @@ const (
 	HOTPEPPER_APIENDPOINT  = "https://webservice.recruit.co.jp/hotpepper/gourmet/v1/"
 	GEOCORDING_APIENDPOINT = "https://maps.googleapis.com/maps/api/geocode/json"
 
-	HOTPEPPER_JQ_QUERY  = ".results.shop[] | { name: .name, access: .mobile_access, budget: .budget.average, url: .urls.pc, photo: .photo.mobile.l, lat: .lat, lng: .lng, coupon: .coupon_urls.sp, genre: .genre.name }"
+	HOTPEPPER_JQ_QUERY  = ".results.shop[] | { shopid: .id, name: .name, access: .mobile_access, budget: .budget.average, url: .urls.pc, photo: .photo.mobile.l, lat: .lat, lng: .lng, coupon: .coupon_urls.sp, genre: .genre.name }"
 	GEOCORDING_JQ_QUERY = ".results[] | { address: .formatted_address, lat: .geometry.location.lat, lng: .geometry.location.lng}"
 )
 
 type Searcher interface {
 	Restaurant(place, budget, genre string) ([]Shop, error)
+	RestaurantById(id string) (Shop, error)
 	Place(place string) (*Location, error)
 }
 
@@ -31,6 +32,8 @@ type search struct {
 }
 
 type Shop struct {
+	UserId string  `json:"id"`
+	ShopId string  `json:"shopid"`
 	Name   string  `json:"name"`
 	Access string  `json:"access"`
 	Budget string  `json:"budget"`
@@ -117,6 +120,52 @@ func (s *search) Restaurant(place, budget, genre string) ([]Shop, error) {
 		shopAry = append(shopAry, shop)
 	}
 	return shopAry, nil
+}
+
+func (s *search) RestaurantById(id string) (Shop, error) {
+	var shop Shop
+
+	params := url.Values{}
+	params.Add("key", s.hotpepper_apikey)
+	params.Add("id", id)
+	params.Add("format", "json")
+
+	resp, err := http.Get(HOTPEPPER_APIENDPOINT + "?" + params.Encode())
+	if err != nil {
+		return shop, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return shop, err
+	}
+
+	var apiResult interface{}
+	if err := json.Unmarshal(body, &apiResult); err != nil {
+		return shop, err
+	}
+
+	query, err := gojq.Parse(HOTPEPPER_JQ_QUERY)
+	if err != nil {
+		return shop, err
+	}
+
+	iter := query.Run(apiResult)
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+		jsonBytes, err := json.Marshal(v)
+		if err != nil {
+			return shop, err
+		}
+		if err := json.Unmarshal(jsonBytes, &shop); err != nil {
+			return shop, err
+		}
+	}
+	return shop, nil
 }
 
 func (s *search) Place(place string) (*Location, error) {

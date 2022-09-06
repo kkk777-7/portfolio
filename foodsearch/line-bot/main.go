@@ -25,7 +25,7 @@ var HOTPEPPER_KEY string
 var GOOGLE_KEY string
 
 func init() {
-	awsClient = awsclient.NewClient("users")
+	awsClient = awsclient.NewClient()
 	err := setupParameters()
 	if err != nil {
 		log.Fatal(err)
