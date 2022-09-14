@@ -1,6 +1,7 @@
 package awsclient
 
 import (
+	"line-bot/search"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -15,16 +16,16 @@ type Client struct {
 }
 
 type User struct {
-	UserId string `json:"id" dynamo:"UserId"`
-	Status string `json:"status" dynamo:"Status"`
-	Genre  string `json:"genre" dynamo:"Genre"`
-	Place  string `json:"place" dynamo:"Place"`
-	Budget string `json:"budget" dynamo:"Budget"`
+	UserId string `json:"id"`
+	Status string `json:"status"`
+	Genre  string `json:"genre"`
+	Place  string `json:"place"`
+	Budget string `json:"budget"`
 }
 
 var table dynamo.Table
 
-func NewClient(tablename string) *Client {
+func NewClient() *Client {
 	client := new(Client)
 
 	disableSsl := false
@@ -52,24 +53,23 @@ func NewClient(tablename string) *Client {
 			DisableSSL: aws.Bool(disableSsl),
 		})
 	}
-
-	table = client.dynamosvc.Table(tablename)
 	return client
 }
 
-func (a *Client) SsmGetParameter(key string) (string, error) {
+func (c *Client) SsmGetParameter(key string) (string, error) {
 	params := &ssm.GetParameterInput{
 		Name:           aws.String(key),
 		WithDecryption: aws.Bool(true),
 	}
-	res, err := a.ssmsvc.GetParameter(params)
+	res, err := c.ssmsvc.GetParameter(params)
 	if err != nil {
 		return "", err
 	}
 	return *res.Parameter.Value, nil
 }
 
-func (a *Client) IsLineUser(id string, result *User) error {
+func (c *Client) IsLineUser(tablename, id string, result *User) error {
+	table = c.dynamosvc.Table(tablename)
 	err := table.Get("UserId", id).One(result)
 	if err != nil {
 		return err
@@ -77,7 +77,8 @@ func (a *Client) IsLineUser(id string, result *User) error {
 	return nil
 }
 
-func (a *Client) SetLineUser(user *User) error {
+func (c *Client) SetLineUser(tablename string, user *User) error {
+	table = c.dynamosvc.Table(tablename)
 	err := table.Put(user).Run()
 	if err != nil {
 		return err
@@ -85,8 +86,36 @@ func (a *Client) SetLineUser(user *User) error {
 	return nil
 }
 
-func (a *Client) UpdateLineUser(user *User, key, value string) error {
+func (c *Client) UpdateLineUser(tablename string, user *User, key, value string) error {
+	table = c.dynamosvc.Table(tablename)
 	err := table.Update("UserId", user.UserId).Set(key, value).Value(user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) SetShop(tablename string, shop *search.Shop) error {
+	table = c.dynamosvc.Table(tablename)
+	err := table.Put(shop).Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) GetShop(tablename, userid string, shops *[]search.Shop) error {
+	table = c.dynamosvc.Table(tablename)
+	err := table.Get("UserId", userid).All(shops)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) DeleteShop(tablename, userid, shopid string) error {
+	table = c.dynamosvc.Table(tablename)
+	err := table.Delete("UserId", userid).Range("ShopId", shopid).Run()
 	if err != nil {
 		return err
 	}

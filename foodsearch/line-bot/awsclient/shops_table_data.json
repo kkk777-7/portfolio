@@ -1,0 +1,34 @@
+{
+    "shops": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "UserId": {
+                        "S": "1234567890"
+                    },
+                    "ShopId": {
+                        "S": "abcdefghij"
+                    },
+                    "Name": {
+                        "S": "dummy22"
+                    },
+                    "Photo": {
+                        "S": "xxxxx"
+                    },
+                    "Access": {
+                        "S": "xxxx"
+                    },
+                    "Budget": {
+                        "S": "2000"
+                    },
+                    "Url": {
+                        "S": "yyyyyy"
+                    },
+                    "Coupon": {
+                        "S": "zzzzzz"
+                    }
+                }
+            }
+        }
+    ]
+}

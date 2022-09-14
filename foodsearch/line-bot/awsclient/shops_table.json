@@ -1,0 +1,27 @@
+{
+    "TableName": "shops",
+    "KeySchema": [
+        {
+            "AttributeName": "UserId",
+            "KeyType": "HASH"
+        },
+        {
+            "AttributeName": "ShopId",
+            "KeyType": "RANGE"
+        }
+    ],
+    "AttributeDefinitions": [
+        {
+            "AttributeName": "UserId",
+            "AttributeType": "S"
+        },
+        {
+            "AttributeName": "ShopId",
+            "AttributeType": "S"
+        }
+    ],
+    "ProvisionedThroughput": {
+        "ReadCapacityUnits": 1,
+        "WriteCapacityUnits": 1
+    }
+}

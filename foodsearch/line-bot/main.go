@@ -14,7 +14,7 @@ const (
 	Successful = 200
 	BadReq     = 400
 	ErrSsm     = 500
-	ErrReq     = 500
+	ErrSrv     = 500
 )
 
 var awsClient *awsclient.Client
@@ -25,7 +25,7 @@ var HOTPEPPER_KEY string
 var GOOGLE_KEY string
 
 func init() {
-	awsClient = awsclient.NewClient("users")
+	awsClient = awsclient.NewClient()
 	err := setupParameters()
 	if err != nil {
 		log.Fatal(err)
@@ -47,16 +47,22 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 			return events.APIGatewayProxyResponse{
 				Body:       err.Error(),
 				StatusCode: BadReq,
-			}, nil
+			}, err
 		} else {
 			return events.APIGatewayProxyResponse{
 				Body:       err.Error(),
-				StatusCode: ErrReq,
-			}, nil
+				StatusCode: ErrSrv,
+			}, err
 		}
 	}
 
-	lineClinet.EventRouter(event)
+	err = lineClinet.EventRouter(event)
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			Body:       err.Error(),
+			StatusCode: ErrSrv,
+		}, err
+	}
 	return events.APIGatewayProxyResponse{
 		StatusCode: Successful,
 	}, nil

@@ -7,28 +7,22 @@ import (
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
-func quickReplyButton(labels []string, values []string) *linebot.QuickReplyItems {
-	var buttons []*linebot.QuickReplyButton
-	for i := 0; i < len(labels); i++ {
-		button := linebot.QuickReplyButton{
-			Action: &linebot.MessageAction{
-				Label: labels[i],
-				Text:  values[i],
-			},
-		}
-		buttons = append(buttons, &button)
-	}
-	return &linebot.QuickReplyItems{Items: buttons}
+func searchedRestaurants(shops []search.Shop) *linebot.CarouselContainer {
+	return restaurants(shops, "お気に入り登録")
 }
 
-func flexRestaurants(shops []search.Shop) *linebot.CarouselContainer {
+func favoriteRestaurants(shops []search.Shop) *linebot.CarouselContainer {
+	return restaurants(shops, "お気に入り削除")
+}
+
+func restaurants(shops []search.Shop, footerMessage string) *linebot.CarouselContainer {
 	var bcs []*linebot.BubbleContainer
 	for _, shop := range shops {
 		bc := linebot.BubbleContainer{
 			Type:   linebot.FlexContainerTypeBubble,
 			Hero:   setHero(shop),
 			Body:   setBody(shop),
-			Footer: setFooter(shop),
+			Footer: setFooter(footerMessage, shop),
 		}
 		bcs = append(bcs, &bc)
 	}
@@ -120,24 +114,48 @@ func setDetail(t string) *linebot.TextComponent {
 	}
 }
 
-func setFooter(shop search.Shop) *linebot.BoxComponent {
+func setFooter(buttonmessage string, shop search.Shop) *linebot.BoxComponent {
 	return &linebot.BoxComponent{
 		Type:    linebot.FlexComponentTypeBox,
 		Layout:  linebot.FlexBoxLayoutTypeVertical,
 		Spacing: linebot.FlexComponentSpacingTypeXs,
 		Contents: []linebot.FlexComponent{
-			setButton("詳しく見る", shop.Url),
-			setButton("地図を確認する", "https://www.google.com/maps"+"?q="+strconv.FormatFloat(shop.Lat, 'f', -1, 64)+","+strconv.FormatFloat(shop.Lng, 'f', -1, 64)),
-			setButton("クーポンを確認", shop.Coupon),
+			setUriButton("詳しく見る", shop.Url),
+			setUriButton("地図を確認する", "https://www.google.com/maps"+"?q="+strconv.FormatFloat(shop.Lat, 'f', -1, 64)+","+strconv.FormatFloat(shop.Lng, 'f', -1, 64)),
+			setUriButton("クーポンを確認", shop.Coupon),
+			setPostButton(buttonmessage, shop),
 		},
 	}
 }
 
-func setButton(label string, uri string) *linebot.ButtonComponent {
+func setUriButton(label string, uri string) *linebot.ButtonComponent {
 	return &linebot.ButtonComponent{
 		Type:   linebot.FlexComponentTypeButton,
 		Style:  linebot.FlexButtonStyleTypeLink,
 		Height: linebot.FlexButtonHeightTypeSm,
 		Action: linebot.NewURIAction(label, uri),
 	}
+}
+
+func setPostButton(label string, shop search.Shop) *linebot.ButtonComponent {
+	return &linebot.ButtonComponent{
+		Type:   linebot.FlexComponentTypeButton,
+		Style:  linebot.FlexButtonStyleTypeLink,
+		Height: linebot.FlexButtonHeightTypeSm,
+		Action: linebot.NewPostbackAction(label, label+":"+shop.ShopId, "", ""),
+	}
+}
+
+func quickReplyButton(labels []string, values []string) *linebot.QuickReplyItems {
+	var buttons []*linebot.QuickReplyButton
+	for i := 0; i < len(labels); i++ {
+		button := linebot.QuickReplyButton{
+			Action: &linebot.MessageAction{
+				Label: labels[i],
+				Text:  values[i],
+			},
+		}
+		buttons = append(buttons, &button)
+	}
+	return &linebot.QuickReplyItems{Items: buttons}
 }
