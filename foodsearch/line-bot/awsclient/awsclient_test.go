@@ -32,7 +32,7 @@ func TestIsLineUser(t *testing.T) {
 	}
 	fmt.Println(user2)
 
-	shop := search.Shop{UserId: "11111", Genre: "イタリアン"}
+	shop := search.Shop{UserId: "11111", ShopId: "22222", Genre: "イタリアン"}
 	err = client.SetShop("shops", &shop)
 	if err != nil {
 		fmt.Println(err)
@@ -45,4 +45,5 @@ func TestIsLineUser(t *testing.T) {
 	}
 	fmt.Println(shops)
 
+	err = client.DeleteShop("shops", "11111", "22222")
 }

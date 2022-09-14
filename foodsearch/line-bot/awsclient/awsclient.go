@@ -56,20 +56,20 @@ func NewClient() *Client {
 	return client
 }
 
-func (a *Client) SsmGetParameter(key string) (string, error) {
+func (c *Client) SsmGetParameter(key string) (string, error) {
 	params := &ssm.GetParameterInput{
 		Name:           aws.String(key),
 		WithDecryption: aws.Bool(true),
 	}
-	res, err := a.ssmsvc.GetParameter(params)
+	res, err := c.ssmsvc.GetParameter(params)
 	if err != nil {
 		return "", err
 	}
 	return *res.Parameter.Value, nil
 }
 
-func (a *Client) IsLineUser(tablename, id string, result *User) error {
-	table = a.dynamosvc.Table(tablename)
+func (c *Client) IsLineUser(tablename, id string, result *User) error {
+	table = c.dynamosvc.Table(tablename)
 	err := table.Get("UserId", id).One(result)
 	if err != nil {
 		return err
@@ -77,8 +77,8 @@ func (a *Client) IsLineUser(tablename, id string, result *User) error {
 	return nil
 }
 
-func (a *Client) SetLineUser(tablename string, user *User) error {
-	table = a.dynamosvc.Table(tablename)
+func (c *Client) SetLineUser(tablename string, user *User) error {
+	table = c.dynamosvc.Table(tablename)
 	err := table.Put(user).Run()
 	if err != nil {
 		return err
@@ -86,8 +86,8 @@ func (a *Client) SetLineUser(tablename string, user *User) error {
 	return nil
 }
 
-func (a *Client) UpdateLineUser(tablename string, user *User, key, value string) error {
-	table = a.dynamosvc.Table(tablename)
+func (c *Client) UpdateLineUser(tablename string, user *User, key, value string) error {
+	table = c.dynamosvc.Table(tablename)
 	err := table.Update("UserId", user.UserId).Set(key, value).Value(user)
 	if err != nil {
 		return err
@@ -95,8 +95,8 @@ func (a *Client) UpdateLineUser(tablename string, user *User, key, value string)
 	return nil
 }
 
-func (a *Client) SetShop(tablename string, shop *search.Shop) error {
-	table = a.dynamosvc.Table(tablename)
+func (c *Client) SetShop(tablename string, shop *search.Shop) error {
+	table = c.dynamosvc.Table(tablename)
 	err := table.Put(shop).Run()
 	if err != nil {
 		return err
@@ -104,9 +104,18 @@ func (a *Client) SetShop(tablename string, shop *search.Shop) error {
 	return nil
 }
 
-func (a *Client) GetShop(tablename, userid string, shops *[]search.Shop) error {
-	table = a.dynamosvc.Table(tablename)
+func (c *Client) GetShop(tablename, userid string, shops *[]search.Shop) error {
+	table = c.dynamosvc.Table(tablename)
 	err := table.Get("UserId", userid).All(shops)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) DeleteShop(tablename, userid, shopid string) error {
+	table = c.dynamosvc.Table(tablename)
+	err := table.Delete("UserId", userid).Range("ShopId", shopid).Run()
 	if err != nil {
 		return err
 	}

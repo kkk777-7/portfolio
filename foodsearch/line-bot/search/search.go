@@ -2,7 +2,7 @@ package search
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -22,7 +22,7 @@ const (
 
 type Searcher interface {
 	Restaurant(place, budget, genre string) ([]Shop, error)
-	RestaurantById(id string) (Shop, error)
+	RestaurantById(id string) (*Shop, error)
 	Place(place string) (*Location, error)
 }
 
@@ -60,7 +60,6 @@ func NewSearcher(_hotpepper_apikey, _geocording_apikey string) Searcher {
 }
 
 func (s *search) Restaurant(place, budget, genre string) ([]Shop, error) {
-
 	loc, err := s.Place(place)
 	if err != nil {
 		return nil, err
@@ -87,7 +86,7 @@ func (s *search) Restaurant(place, budget, genre string) ([]Shop, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -122,9 +121,7 @@ func (s *search) Restaurant(place, budget, genre string) ([]Shop, error) {
 	return shopAry, nil
 }
 
-func (s *search) RestaurantById(id string) (Shop, error) {
-	var shop Shop
-
+func (s *search) RestaurantById(id string) (*Shop, error) {
 	params := url.Values{}
 	params.Add("key", s.hotpepper_apikey)
 	params.Add("id", id)
@@ -132,23 +129,24 @@ func (s *search) RestaurantById(id string) (Shop, error) {
 
 	resp, err := http.Get(HOTPEPPER_APIENDPOINT + "?" + params.Encode())
 	if err != nil {
-		return shop, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return shop, err
+		return nil, err
 	}
 
 	var apiResult interface{}
 	if err := json.Unmarshal(body, &apiResult); err != nil {
-		return shop, err
+		return nil, err
 	}
 
+	var shop *Shop
 	query, err := gojq.Parse(HOTPEPPER_JQ_QUERY)
 	if err != nil {
-		return shop, err
+		return nil, err
 	}
 
 	iter := query.Run(apiResult)
@@ -159,10 +157,10 @@ func (s *search) RestaurantById(id string) (Shop, error) {
 		}
 		jsonBytes, err := json.Marshal(v)
 		if err != nil {
-			return shop, err
+			return nil, err
 		}
 		if err := json.Unmarshal(jsonBytes, &shop); err != nil {
-			return shop, err
+			return nil, err
 		}
 	}
 	return shop, nil
@@ -179,7 +177,7 @@ func (s *search) Place(place string) (*Location, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -189,23 +187,27 @@ func (s *search) Place(place string) (*Location, error) {
 		return nil, err
 	}
 
+	var loc *Location
 	query, err := gojq.Parse(GEOCORDING_JQ_QUERY)
 	if err != nil {
 		return nil, err
 	}
 
 	iter := query.Run(apiResult)
-	v, _ := iter.Next()
-
-	jsonBytes, err := json.Marshal(v)
-	if err != nil {
-		return nil, err
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+		jsonBytes, err := json.Marshal(v)
+		if err != nil {
+			return nil, err
+		}
+		loc.Name = place
+		if err := json.Unmarshal(jsonBytes, loc); err != nil {
+			return nil, err
+		}
 	}
-	loc := &Location{Name: place}
-	if err := json.Unmarshal(jsonBytes, loc); err != nil {
-		return nil, err
-	}
-
 	return loc, nil
 }
 
