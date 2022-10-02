@@ -27,8 +27,10 @@ type Searcher interface {
 }
 
 type search struct {
-	hotpepper_apikey  string
-	geocording_apikey string
+	hotpepperApiUrl  string
+	hotpepperApiKey  string
+	geocordingApiUrl string
+	geocordingApiKey string
 }
 
 type Shop struct {
@@ -52,13 +54,26 @@ type Location struct {
 	Address string  `json:"address"`
 }
 
-func NewSearcher(_hotpepper_apikey, _geocording_apikey string) Searcher {
+// Constructor of Searcher from API
+func NewSearcher(_hotpepperApiUrl, _hotpepperApiKey, _geocordingApiUrl, _geocordingApiKey string) Searcher {
+	hotpepperUrl := HOTPEPPER_APIENDPOINT
+	geocordingUrl := GEOCORDING_APIENDPOINT
+	if _hotpepperApiUrl != "" {
+		hotpepperUrl = _hotpepperApiUrl
+	}
+	if _geocordingApiUrl != "" {
+		geocordingUrl = _geocordingApiUrl
+	}
+
 	return &search{
-		hotpepper_apikey:  _hotpepper_apikey,
-		geocording_apikey: _geocording_apikey,
+		hotpepperApiUrl:  hotpepperUrl,
+		hotpepperApiKey:  _hotpepperApiKey,
+		geocordingApiUrl: geocordingUrl,
+		geocordingApiKey: _geocordingApiKey,
 	}
 }
 
+// Search for the  restaurant from hotpepper's API
 func (s *search) Restaurant(place, budget, genre string) ([]Shop, error) {
 	loc, err := s.Place(place)
 	if err != nil {
@@ -71,7 +86,7 @@ func (s *search) Restaurant(place, budget, genre string) ([]Shop, error) {
 	genrecode := convertGenreToCode(genre)
 
 	params := url.Values{}
-	params.Add("key", s.hotpepper_apikey)
+	params.Add("key", s.hotpepperApiKey)
 	params.Add("lat", strconv.FormatFloat(loc.Lat, 'f', -1, 64))
 	params.Add("lng", strconv.FormatFloat(loc.Lng, 'f', -1, 64))
 	params.Add("range", "3")
@@ -121,9 +136,10 @@ func (s *search) Restaurant(place, budget, genre string) ([]Shop, error) {
 	return shopAry, nil
 }
 
+// Search for the  restaurant By Id from hotpepper's API
 func (s *search) RestaurantById(id string) (*Shop, error) {
 	params := url.Values{}
-	params.Add("key", s.hotpepper_apikey)
+	params.Add("key", s.hotpepperApiKey)
 	params.Add("id", id)
 	params.Add("format", "json")
 
@@ -143,7 +159,7 @@ func (s *search) RestaurantById(id string) (*Shop, error) {
 		return nil, err
 	}
 
-	var shop *Shop
+	var shop Shop
 	query, err := gojq.Parse(HOTPEPPER_JQ_QUERY)
 	if err != nil {
 		return nil, err
@@ -163,15 +179,16 @@ func (s *search) RestaurantById(id string) (*Shop, error) {
 			return nil, err
 		}
 	}
-	return shop, nil
+	return &shop, nil
 }
 
+// Search the latitude and longitude of a point from geocording's API
 func (s *search) Place(place string) (*Location, error) {
 	params := url.Values{}
 	params.Add("address", place)
-	params.Add("key", s.geocording_apikey)
+	params.Add("key", s.geocordingApiKey)
 
-	resp, err := http.Get(GEOCORDING_APIENDPOINT + "?" + params.Encode())
+	resp, err := http.Get(s.geocordingApiUrl + "?" + params.Encode())
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +204,7 @@ func (s *search) Place(place string) (*Location, error) {
 		return nil, err
 	}
 
-	var loc *Location
+	var loc Location
 	query, err := gojq.Parse(GEOCORDING_JQ_QUERY)
 	if err != nil {
 		return nil, err
@@ -204,13 +221,14 @@ func (s *search) Place(place string) (*Location, error) {
 			return nil, err
 		}
 		loc.Name = place
-		if err := json.Unmarshal(jsonBytes, loc); err != nil {
+		if err := json.Unmarshal(jsonBytes, &loc); err != nil {
 			return nil, err
 		}
 	}
-	return loc, nil
+	return &loc, nil
 }
 
+// Convert from budget to API code
 func convertValueToCode(budget string) (string, error) {
 	code, err := strconv.Atoi(budget)
 	if err != nil {
@@ -247,6 +265,7 @@ func convertValueToCode(budget string) (string, error) {
 	return "", errors.New("Invalid value.")
 }
 
+//　Convert from genre name to API code
 func convertGenreToCode(genre string) string {
 	switch {
 	case strings.Contains(genre, "居酒屋"):

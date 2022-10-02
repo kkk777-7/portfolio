@@ -31,13 +31,14 @@ var genres []string = []string{"居酒屋", "和食", "洋食", "イタリアン
 var budgets []string = []string{"1000", "1500", "2000", "3000", "4000", "5000", "7000", "10000", "15000", "20000", "30000", "30001"}
 var budgetLabels []string = []string{"500円以上1000円未満", "1000円以上1500円未満", "1500円以上2000円未満", "2000円以上3000円未満", "3000円以上4000円未満", "4000円以上5000円未満", "5000円以上7000円未満", "7000円以上10000円未満", "10000円以上15000円未満", "15000円以上20000円未満", "20000円以上30000円未満", "30000円以上"}
 
+// Constructor of Line Messenger
 func NewMessenger(secret, token, hotpepper_apikey, geocording_apikey string, _awsclient *awsclient.Client) (Messenger, error) {
 	m := &message{
 		ChannelSecret: secret,
 		ChannelToken:  token,
 	}
 
-	m.Searcher = search.NewSearcher(hotpepper_apikey, geocording_apikey)
+	m.Searcher = search.NewSearcher("", hotpepper_apikey, "", geocording_apikey)
 	m.AwsClient = _awsclient
 
 	bot, err := linebot.New(
@@ -51,6 +52,7 @@ func NewMessenger(secret, token, hotpepper_apikey, geocording_apikey string, _aw
 	return m, nil
 }
 
+// Branch processing depending on the event type
 func (m *message) EventRouter(events []*linebot.Event) error {
 	for _, event := range events {
 		switch event.Type {
@@ -85,6 +87,7 @@ func (m *message) EventRouter(events []*linebot.Event) error {
 	return nil
 }
 
+// Reply a specific string to line user
 func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) error {
 	replyToken := event.ReplyToken
 
@@ -222,6 +225,7 @@ func (m *message) Reply(event *linebot.Event, message *linebot.TextMessage) erro
 	return nil
 }
 
+// Resister the specified restaurant to your favorites
 func (m *message) Register(event *linebot.Event, shop_id string) error {
 	replyToken := event.ReplyToken
 
@@ -258,6 +262,7 @@ func (m *message) Register(event *linebot.Event, shop_id string) error {
 	return nil
 }
 
+// Delete the specified restaurant to your favorites
 func (m *message) Delete(event *linebot.Event, shop_id string) error {
 	replyToken := event.ReplyToken
 
@@ -292,6 +297,7 @@ func (m *message) Delete(event *linebot.Event, shop_id string) error {
 	return nil
 }
 
+// Parse requests from APIGW for linebot
 func (m *message) ParseRequest(r events.APIGatewayProxyRequest) ([]*linebot.Event, error) {
 	req := &struct {
 		Events []*linebot.Event `json:"events"`
@@ -302,6 +308,7 @@ func (m *message) ParseRequest(r events.APIGatewayProxyRequest) ([]*linebot.Even
 	return req.Events, nil
 }
 
+// Check status information of line users
 func (m *message) statusCheck(event *linebot.Event) error {
 	err := m.AwsClient.IsLineUser("users", event.Source.UserID, &user)
 	if err != nil && user.UserId != "" {
@@ -317,6 +324,7 @@ func (m *message) statusCheck(event *linebot.Event) error {
 	return nil
 }
 
+// Reset status information of line users
 func (m *message) statusReset() error {
 	err := m.AwsClient.UpdateLineUser("users", &user, "Status", "WaitSearch")
 	if err != nil {

@@ -24,6 +24,7 @@ var CHANNEL_TOKEN string
 var HOTPEPPER_KEY string
 var GOOGLE_KEY string
 
+// Set up the necessary clients
 func init() {
 	awsClient = awsclient.NewClient()
 	err := setupParameters()
@@ -40,6 +41,7 @@ func main() {
 	lambda.Start(Handler)
 }
 
+// Parses requests from APIGW and passes events to line client
 func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	event, err := lineClinet.ParseRequest(req)
 	if err != nil {
@@ -68,6 +70,7 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 	}, nil
 }
 
+// Get parameters from ssm
 func setupParameters() error {
 	var err error
 	CHANNEL_SECRET, err = awsClient.SsmGetParameter("channel_secret_testbot")
